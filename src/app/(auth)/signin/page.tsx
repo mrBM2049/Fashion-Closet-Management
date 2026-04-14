@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/card";
 
 function signInAction(_prev: any, formData: FormData) {
-  return signInUser(formData);
+  return signInUser(_prev, formData);
 }
 
 export default function SignInPage() {

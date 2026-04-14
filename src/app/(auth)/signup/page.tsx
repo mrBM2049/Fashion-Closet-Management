@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/card";
 
 function signUpAction(_prev: any, formData: FormData) {
-  return signUp(formData);
+  return signUp(_prev, formData);
 }
 
 export default function SignUpPage() {
