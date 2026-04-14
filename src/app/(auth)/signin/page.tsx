@@ -15,12 +15,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-function signInAction(_prev: any, formData: FormData) {
-  return signInUser(_prev, formData);
-}
-
 export default function SignInPage() {
-  const [state, action, pending] = useActionState(signInAction, null);
+  const [state, action, pending] = useActionState(signInUser, null);
 
   return (
     <Card>

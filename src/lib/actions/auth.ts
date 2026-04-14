@@ -3,7 +3,6 @@
 import { db } from "@/lib/db/client";
 import bcrypt from "bcryptjs";
 import { signIn } from "@/auth";
-import { redirect } from "next/navigation";
 import { AuthError } from "next-auth";
 
 export async function signUp(_prev: any, formData: FormData) {
@@ -21,12 +20,12 @@ export async function signUp(_prev: any, formData: FormData) {
 
   try {
     const [existing] = await db.execute(
-      "SELECT user_id FROM Users WHERE email = ?",
-      [email]
+      "SELECT user_id FROM Users WHERE email = ? OR username = ?",
+      [email, username]
     );
 
     if ((existing as any[]).length > 0) {
-      return { error: "An account with this email already exists." };
+      return { error: "Email or username already taken." };
     }
 
     const hash = await bcrypt.hash(password, 12);
@@ -35,14 +34,15 @@ export async function signUp(_prev: any, formData: FormData) {
       "INSERT INTO Users (email, username, password_hash) VALUES (?, ?, ?)",
       [email, username, hash]
     );
+
+    return { success: "Account created! Redirecting to sign in..." };
   } catch (err: any) {
+    console.error("[signUp error]", err);
     if (err?.code === "ER_DUP_ENTRY") {
       return { error: "Email or username already taken." };
     }
-    return { error: "Something went wrong. Please try again." };
+    return { error: `DB error: ${err?.message ?? "Unknown error"}` };
   }
-
-  redirect("/signin");
 }
 
 export async function signInUser(_prev: any, formData: FormData) {
@@ -60,14 +60,17 @@ export async function signInUser(_prev: any, formData: FormData) {
       redirectTo: "/closet",
     });
   } catch (error) {
-    if (error instanceof AuthError) {
-      switch (error.type) {
-        case "CredentialsSignin":
-          return { error: "Invalid email or password." };
-        default:
-          return { error: "Something went wrong. Please try again." };
-      }
+    // Next.js redirect() throws NEXT_REDIRECT — must re-throw it
+    if ((error as any)?.digest?.startsWith("NEXT_REDIRECT")) {
+      throw error;
     }
-    throw error;
+    if (error instanceof AuthError) {
+      if (error.type === "CredentialsSignin") {
+        return { error: "Invalid email or password." };
+      }
+      return { error: "Sign in failed. Please try again." };
+    }
+    console.error("[signInUser error]", error);
+    return { error: "Something went wrong. Please try again." };
   }
 }

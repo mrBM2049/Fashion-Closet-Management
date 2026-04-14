@@ -1,8 +1,10 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signUp } from "@/lib/actions/auth";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,12 +17,19 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-function signUpAction(_prev: any, formData: FormData) {
-  return signUp(_prev, formData);
-}
-
 export default function SignUpPage() {
-  const [state, action, pending] = useActionState(signUpAction, null);
+  const [state, action, pending] = useActionState(signUp, null);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (state?.success) {
+      toast.success(state.success);
+      setTimeout(() => router.push("/signin"), 1500);
+    }
+    if (state?.error) {
+      toast.error(state.error);
+    }
+  }, [state, router]);
 
   return (
     <Card>
@@ -34,6 +43,9 @@ export default function SignUpPage() {
         <CardContent className="space-y-4">
           {state?.error && (
             <p className="text-sm text-destructive text-center">{state.error}</p>
+          )}
+          {state?.success && (
+            <p className="text-sm text-green-600 text-center">{state.success}</p>
           )}
           <div className="space-y-2">
             <Label htmlFor="username">Username</Label>

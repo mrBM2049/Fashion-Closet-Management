@@ -19,13 +19,15 @@ export interface InventoryItem {
   name: string;
   brand: string | null;
   cat_id: number | null;
+  category_name?: string | null;
   color: string | null;
   size: string | null;
+  tags: string | null;
   condition_grade: "New" | "Like New" | "Good" | "Fair" | "Poor";
   purchase_price: number | null;
   image_url: string | null;
   description: string | null;
-  status: "Active" | "Archived" | "Listed" | "Sold";
+  status: "Available" | "Listed" | "Sold";
   wear_count: number;
   created_at: Date;
   updated_at: Date;

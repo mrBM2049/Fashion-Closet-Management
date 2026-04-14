@@ -2,8 +2,10 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { db } from "@/lib/db/client";
 import bcrypt from "bcryptjs";
+import { authConfig } from "@/auth.config";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  ...authConfig,
   providers: [
     Credentials({
       credentials: {
@@ -11,7 +13,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        const email = credentials.email as string;
+        const email    = credentials.email    as string;
         const password = credentials.password as string;
         const [rows] = await db.execute(
           "SELECT user_id, email, username, password_hash, role FROM Users WHERE email = ?",
@@ -25,8 +27,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
   ],
-  pages: { signIn: "/signin" },
   callbacks: {
+    ...authConfig.callbacks,
     jwt({ token, user }) {
       if (user) {
         token.role   = (user as any).role;

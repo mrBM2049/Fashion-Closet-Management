@@ -1,9 +1,18 @@
-import { auth } from "@/auth";
+import NextAuth from "next-auth";
+import { authConfig } from "@/auth.config";
 
-export default auth((req) => {
-  if (!req.auth) return Response.redirect(new URL("/signin", req.url));
-});
+export const { auth: middleware } = NextAuth(authConfig);
+export default middleware;
 
 export const config = {
-  matcher: ["/closet/:path*", "/outfits/:path*", "/analytics", "/transactions"],
+  matcher: [
+    // Protected app routes
+    "/closet/:path*",
+    "/outfits/:path*",
+    "/analytics/:path*",
+    "/transactions/:path*",
+    // Auth pages — redirect to /closet if already logged in
+    "/signin",
+    "/signup",
+  ],
 };

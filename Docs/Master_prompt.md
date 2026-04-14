@@ -120,7 +120,7 @@ EXECUTION_PLAN.md > ARCHITECTURE.md > DB_SCHEMA.md > UI_MAP.md
 
 DO NOT:
 
-* Use emojis
+* Use emojis anywhere — not in UI code, not in responses, not in comments
 * Use marketing language
 * Use AI fluff or filler text
 
@@ -134,6 +134,40 @@ DO:
   * [✔] Completed
   * [ ] Pending
   * [~] In Progress
+
+### 5a. UI Icon Rule (MANDATORY)
+
+NEVER use emoji characters as UI icons (e.g. 👕, 👗, 👟).
+
+ALWAYS use icon components from `lucide-react` for all UI icons.
+
+```tsx
+// WRONG — never do this
+<div>👕</div>
+<p className="text-5xl mb-4">👗</p>
+
+// CORRECT — always do this
+import { Shirt, Package, Plus, Trash2 } from "lucide-react";
+<Shirt className="w-10 h-10 text-muted-foreground" />
+```
+
+Common icon mappings for this project:
+
+| Use case | Lucide icon |
+|----------|-------------|
+| Clothing item / empty closet | `Shirt` |
+| Outfit / look | `Layers` |
+| Add / create | `Plus` |
+| Delete | `Trash2` |
+| Edit | `Pencil` |
+| Analytics | `BarChart2` |
+| Transaction / money | `ArrowLeftRight` |
+| Wear / log | `CalendarCheck` |
+| Back arrow | `ChevronLeft` |
+| Sign out | `LogOut` |
+| User | `User` |
+| Search | `Search` |
+| Filter | `SlidersHorizontal` |
 
 ---
 
