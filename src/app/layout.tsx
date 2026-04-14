@@ -8,6 +8,7 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "ThreadShare — Fashion Closet Manager",
   description: "Manage your wardrobe, build outfits, and track your fashion analytics.",
+  icons: { icon: "/favicon.svg" },
 };
 
 export default function RootLayout({

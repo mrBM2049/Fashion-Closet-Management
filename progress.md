@@ -1,16 +1,16 @@
 # Project Progress Tracker
 
 ## Current Phase
-Phase 4 — Outfits (COMPLETED)
+Phase 7 — Polish & Seed Data (COMPLETED)
 
 ## Completed Phases
 - [x] Phase 1 — Project Setup & Database
 - [x] Phase 2 — Authentication
 - [x] Phase 3 — Closet
 - [x] Phase 4 — Outfits
-- [ ] Phase 5 — Analytics
-- [ ] Phase 6 — Transactions
-- [ ] Phase 7 — Polish & Seed Data
+- [x] Phase 5 — Analytics
+- [x] Phase 6 — Transactions
+- [x] Phase 7 — Polish & Seed Data
 
 ---
 
@@ -43,7 +43,43 @@ Phase 4 — Outfits (COMPLETED)
 
 ---
 
-## Phase 3 — Closet (COMPLETED)
+## Phase 7 — Polish & Seed Data (COMPLETED)
+
+### Steps Completed
+1. Expanded `database/seed.sql` — 32 items across 3 users, 22 wear log entries, 5 outfits with items, 5 transactions (mix of Sale/Borrow, all statuses)
+2. Created `src/components/shared/EmptyState.tsx` — reusable empty state with icon, title, description, optional action
+3. Added sonner toasts to all mutations: AddItemForm (error), OutfitBuilder (error), OutfitCard delete (success/error), LogWearForm (success/error), TransactionTable status update (success/error), CreateTransactionForm (success/error)
+4. Created `src/components/closet/LogWearForm.tsx` — client component with toast + form reset after successful wear log
+5. Enlarged logo: Navbar `h-7` → `h-10`, navbar height `h-14` → `h-16`, auth page `h-8` → `h-12`
+
+---
+
+### Steps Completed
+1. Created `src/app/api/transactions/route.ts` — GET (3-table JOIN), POST (atomic BEGIN/COMMIT)
+2. Created `src/app/api/transactions/[txnId]/route.ts` — PATCH status (triggers `trg_update_item_status_on_sale`)
+3. Created `src/lib/actions/transactions.ts` — `createTransaction`, `updateTransactionStatus`
+4. Created `src/components/transactions/TransactionTable.tsx` — history table with Complete/Cancel buttons (seller only)
+5. Created `src/components/transactions/CreateTransactionForm.tsx` — new transaction form
+6. Created `src/app/(app)/transactions/page.tsx` — summary cards + history + create form
+
+### SQL Used
+- History (3-table JOIN): `SELECT ... FROM Transactions t JOIN Inventory_Items ii JOIN Users s JOIN Users b WHERE t.seller_id = ? OR t.buyer_id = ?`
+- Create (atomic): `BEGIN → INSERT INTO Transactions → UPDATE Inventory_Items SET status = 'Listed' → COMMIT`
+- Status update: `UPDATE Transactions SET status = ? WHERE txn_id = ?` — fires `trg_update_item_status_on_sale` on Completed Sale
+
+---
+
+### Steps Completed
+1. Created `src/app/api/analytics/route.ts` — GET returning CPW list, most-worn, never-worn
+2. Created `src/components/analytics/CostPerWearTable.tsx` — client-side sortable table (click any column header)
+3. Created `src/app/(app)/analytics/page.tsx` — three sections + summary stat cards
+
+### SQL Used
+- CPW view: `SELECT item_id, name, brand, purchase_price, wear_count, cost_per_wear FROM v_cost_per_wear WHERE user_id = ? ORDER BY cost_per_wear ASC`
+- Most worn: `SELECT ... FROM Inventory_Items WHERE user_id = ? ORDER BY wear_count DESC LIMIT 5`
+- Never worn: `SELECT ... FROM Inventory_Items WHERE user_id = ? AND item_id NOT IN (SELECT DISTINCT item_id FROM Wear_Log)`
+
+---
 
 ### Steps Completed
 1. Created `src/app/api/items/route.ts` — GET with filters + FULLTEXT search
@@ -167,5 +203,5 @@ Phase 4 — Outfits (COMPLETED)
 - **Fix:** Updated wrapper functions in `signin/page.tsx` and `signup/page.tsx` to forward `_prev`. Cast `credentials.email`/`credentials.password` to `string` in `auth.ts`.
 - **Result:** `tsc --noEmit` passes with zero errors. Both `/signin` and `/signup` render correctly at localhost.
 
-## Next Phase Preview (DO NOT EXECUTE)
-- Phase 5 — Analytics: `/analytics` page with `v_cost_per_wear` view, most-worn (ORDER BY wear_count DESC LIMIT 5), never-worn (subquery NOT IN Wear_Log)
+## Next Phase Preview
+All 7 phases complete. Project is submission-ready.

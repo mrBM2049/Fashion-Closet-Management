@@ -9,11 +9,12 @@ export async function addItem(formData: FormData) {
   if (!session?.user) throw new Error("Unauthorized");
 
   const userId = (session.user as any).userId;
+  const imageUrl = (formData.get("image_url") as string) || null;
 
   await db.execute(
     `INSERT INTO Inventory_Items
-       (user_id, name, brand, cat_id, color, size, condition_grade, purchase_price, description)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       (user_id, name, brand, cat_id, color, size, condition_grade, purchase_price, description, image_url)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       userId,
       formData.get("name") as string,
@@ -24,6 +25,7 @@ export async function addItem(formData: FormData) {
       (formData.get("condition_grade") as string) || "Good",
       (formData.get("purchase_price") as string) || null,
       (formData.get("description") as string) || null,
+      imageUrl,
     ]
   );
 
@@ -36,10 +38,12 @@ export async function updateItem(itemId: number, formData: FormData) {
   if (!session?.user) throw new Error("Unauthorized");
 
   const userId = (session.user as any).userId;
+  const imageUrl = (formData.get("image_url") as string) || null;
 
   await db.execute(
     `UPDATE Inventory_Items
-     SET name=?, brand=?, cat_id=?, color=?, size=?, condition_grade=?, purchase_price=?, description=?
+     SET name=?, brand=?, cat_id=?, color=?, size=?, condition_grade=?, purchase_price=?, description=?,
+         image_url=COALESCE(NULLIF(?, ''), image_url)
      WHERE item_id=? AND user_id=?`,
     [
       formData.get("name") as string,
@@ -50,6 +54,7 @@ export async function updateItem(itemId: number, formData: FormData) {
       (formData.get("condition_grade") as string) || "Good",
       (formData.get("purchase_price") as string) || null,
       (formData.get("description") as string) || null,
+      imageUrl,
       itemId,
       userId,
     ]
@@ -81,4 +86,5 @@ export async function logWear(itemId: number, occasion: string) {
 
   await db.execute("CALL sp_add_wear_entry(?, CURDATE(), ?)", [itemId, occasion || null]);
   revalidatePath(`/closet/${itemId}`);
+  return { success: true };
 }

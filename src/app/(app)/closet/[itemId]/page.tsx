@@ -2,10 +2,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { db } from "@/lib/db/client";
-import { ChevronLeft, Shirt, Pencil, Trash2, CalendarCheck } from "lucide-react";
+import { ChevronLeft, Shirt, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { deleteItem, logWear } from "@/lib/actions/items";
+import { deleteItem } from "@/lib/actions/items";
+import LogWearForm from "@/components/closet/LogWearForm";
 import { InventoryItem, WearLog } from "@/types";
 
 async function getItem(itemId: string, userId: string) {
@@ -43,12 +44,6 @@ export default async function ItemDetailPage({
   const deleteAction = async () => {
     "use server";
     await deleteItem(item.item_id);
-  };
-
-  const logWearAction = async (formData: FormData) => {
-    "use server";
-    const occasion = formData.get("occasion") as string;
-    await logWear(item.item_id, occasion);
   };
 
   return (
@@ -106,16 +101,7 @@ export default async function ItemDetailPage({
           )}
 
           {/* Log Wear */}
-          <form action={logWearAction} className="flex gap-2 pt-2">
-            <input
-              name="occasion"
-              placeholder="Occasion (e.g. College)"
-              className="flex-1 border rounded-lg px-3 py-1.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-            <Button type="submit" size="sm">
-              <CalendarCheck className="w-4 h-4 mr-1" />Log Wear
-            </Button>
-          </form>
+          <LogWearForm itemId={item.item_id} />
 
           {/* Actions */}
           <div className="flex gap-2 pt-2 border-t">

@@ -3,15 +3,16 @@ import { auth } from "@/auth";
 import { signOut } from "@/auth";
 import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Logo from "@/components/layout/Logo";
 
 export default async function Navbar() {
   const session = await auth();
 
   return (
     <header className="border-b bg-background sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
-        <Link href="/closet" className="font-semibold text-lg tracking-tight">
-          ThreadShare
+      <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+        <Link href="/closet" className="flex items-center">
+          <Logo className="h-10 w-auto" />
         </Link>
 
         <nav className="hidden md:flex items-center gap-6 text-sm">

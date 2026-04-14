@@ -16,6 +16,12 @@ export const authConfig: NextAuthConfig = {
       const isProtected = protectedPaths.some((p) => pathname.startsWith(p));
       const isAuthPage = authPaths.some((p) => pathname.startsWith(p));
 
+      // Root path — redirect based on auth state
+      if (pathname === "/") {
+        if (isLoggedIn) return Response.redirect(new URL("/closet", nextUrl));
+        return Response.redirect(new URL("/signin", nextUrl));
+      }
+
       // Logged-in user trying to access signin/signup → redirect to closet
       if (isLoggedIn && isAuthPage) {
         return Response.redirect(new URL("/closet", nextUrl));

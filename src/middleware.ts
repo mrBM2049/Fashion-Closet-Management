@@ -6,6 +6,7 @@ export default middleware;
 
 export const config = {
   matcher: [
+    "/",
     // Protected app routes
     "/closet/:path*",
     "/outfits/:path*",

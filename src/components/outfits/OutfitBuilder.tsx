@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useState, useActionState, useEffect } from "react";
+import { toast } from "sonner";
 import { Shirt } from "lucide-react";
 import { createOutfit } from "@/lib/actions/outfits";
 import { Button } from "@/components/ui/button";
@@ -9,8 +10,25 @@ import { InventoryItem } from "@/types";
 
 const OCCASIONS = ["Casual", "Formal", "Party", "College", "Work", "Sport", "Date", "Travel"];
 
+type State = { error?: string } | null;
+
+async function createOutfitAction(_prev: State, formData: FormData): Promise<State> {
+  try {
+    await createOutfit(formData);
+    return null;
+  } catch (e: any) {
+    if (e?.digest?.startsWith("NEXT_REDIRECT")) throw e;
+    return { error: e.message ?? "Failed to save outfit" };
+  }
+}
+
 export default function OutfitBuilder({ items }: { items: InventoryItem[] }) {
   const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [state, formAction, pending] = useActionState(createOutfitAction, null);
+
+  useEffect(() => {
+    if (state?.error) toast.error(state.error);
+  }, [state]);
 
   const toggle = (id: number) => {
     setSelected((prev) => {
@@ -21,7 +39,7 @@ export default function OutfitBuilder({ items }: { items: InventoryItem[] }) {
   };
 
   return (
-    <form action={createOutfit} className="space-y-6">
+    <form action={formAction} className="space-y-6">
       <div className="grid sm:grid-cols-2 gap-4">
         <div className="space-y-1.5">
           <Label htmlFor="name">Outfit Name *</Label>
@@ -69,11 +87,7 @@ export default function OutfitBuilder({ items }: { items: InventoryItem[] }) {
                   <div className="aspect-square bg-muted">
                     {item.image_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={item.image_url}
-                        alt={item.name}
-                        className="w-full h-full object-cover"
-                      />
+                      <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                         <Shirt className="w-8 h-8 opacity-30" />
@@ -93,8 +107,12 @@ export default function OutfitBuilder({ items }: { items: InventoryItem[] }) {
         )}
       </div>
 
-      <Button type="submit" disabled={selected.size === 0} className="w-full sm:w-auto">
-        Save Outfit
+      {state?.error && (
+        <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-lg">{state.error}</p>
+      )}
+
+      <Button type="submit" disabled={selected.size === 0 || pending} className="w-full sm:w-auto">
+        {pending ? "Saving..." : "Save Outfit"}
       </Button>
     </form>
   );

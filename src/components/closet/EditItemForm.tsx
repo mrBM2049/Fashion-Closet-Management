@@ -1,66 +1,49 @@
 "use client";
-import { useActionState, useEffect, useState } from "react";
-import { toast } from "sonner";
-import { addItem } from "@/lib/actions/items";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import ImageUploader from "@/components/closet/ImageUploader";
-import { Category } from "@/types";
+import { InventoryItem, Category } from "@/types";
 
 const CONDITIONS = ["New", "Like New", "Good", "Fair", "Poor"];
 const SIZES = ["XS", "S", "M", "L", "XL", "XXL", "28", "30", "32", "34", "36"];
 const COLORS = ["Black", "White", "Grey", "Navy", "Blue", "Red", "Green", "Brown", "Beige", "Pink", "Yellow"];
 
-type State = { error?: string } | null;
-
-async function addItemAction(_prev: State, formData: FormData): Promise<State> {
-  try {
-    await addItem(formData);
-    return null;
-  } catch (e: any) {
-    if (e?.digest?.startsWith("NEXT_REDIRECT")) throw e;
-    return { error: e.message ?? "Failed to add item" };
-  }
-}
-
-export default function AddItemForm({ categories }: { categories: Category[] }) {
-  const [state, formAction, pending] = useActionState(addItemAction, null);
-  const [imageUrl, setImageUrl] = useState("");
-
-  useEffect(() => {
-    if (state?.error) toast.error(state.error);
-  }, [state]);
+export default function EditItemForm({
+  item,
+  categories,
+  updateAction,
+}: {
+  item: InventoryItem;
+  categories: Category[];
+  updateAction: (formData: FormData) => Promise<void>;
+}) {
+  const [imageUrl, setImageUrl] = useState(item.image_url ?? "");
 
   return (
-    <form action={formAction} className="space-y-5 max-w-lg">
-      {state?.error && (
-        <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-lg">
-          {state.error}
-        </p>
-      )}
-
+    <form action={updateAction} className="space-y-5">
       {/* Image upload */}
       <div className="space-y-1.5">
         <Label>Photo</Label>
-        <ImageUploader onUpload={(url) => setImageUrl(url)} />
+        <ImageUploader currentUrl={item.image_url} onUpload={(url) => setImageUrl(url)} />
         <input type="hidden" name="image_url" value={imageUrl} />
       </div>
 
       <div className="space-y-1.5">
         <Label htmlFor="name">Item Name *</Label>
-        <Input id="name" name="name" placeholder="e.g. Vintage Levi's Jacket" required />
+        <Input id="name" name="name" defaultValue={item.name} required />
       </div>
 
       <div className="space-y-1.5">
         <Label htmlFor="brand">Brand</Label>
-        <Input id="brand" name="brand" placeholder="e.g. Levi's" />
+        <Input id="brand" name="brand" defaultValue={item.brand ?? ""} />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1.5">
           <Label htmlFor="cat_id">Category</Label>
-          <select id="cat_id" name="cat_id" className="w-full border rounded-lg px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-ring">
+          <select id="cat_id" name="cat_id" defaultValue={item.cat_id ?? ""} className="w-full border rounded-lg px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-ring">
             <option value="">Select category</option>
             {categories.map((c) => (
               <option key={c.cat_id} value={c.cat_id}>{c.name}</option>
@@ -70,7 +53,7 @@ export default function AddItemForm({ categories }: { categories: Category[] }) 
 
         <div className="space-y-1.5">
           <Label htmlFor="condition_grade">Condition</Label>
-          <select id="condition_grade" name="condition_grade" className="w-full border rounded-lg px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-ring">
+          <select id="condition_grade" name="condition_grade" defaultValue={item.condition_grade} className="w-full border rounded-lg px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-ring">
             {CONDITIONS.map((c) => (
               <option key={c} value={c}>{c}</option>
             ))}
@@ -81,7 +64,7 @@ export default function AddItemForm({ categories }: { categories: Category[] }) 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1.5">
           <Label htmlFor="color">Color</Label>
-          <select id="color" name="color" className="w-full border rounded-lg px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-ring">
+          <select id="color" name="color" defaultValue={item.color ?? ""} className="w-full border rounded-lg px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-ring">
             <option value="">Select color</option>
             {COLORS.map((c) => (
               <option key={c} value={c}>{c}</option>
@@ -91,7 +74,7 @@ export default function AddItemForm({ categories }: { categories: Category[] }) 
 
         <div className="space-y-1.5">
           <Label htmlFor="size">Size</Label>
-          <select id="size" name="size" className="w-full border rounded-lg px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-ring">
+          <select id="size" name="size" defaultValue={item.size ?? ""} className="w-full border rounded-lg px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-ring">
             <option value="">Select size</option>
             {SIZES.map((s) => (
               <option key={s} value={s}>{s}</option>
@@ -102,7 +85,7 @@ export default function AddItemForm({ categories }: { categories: Category[] }) 
 
       <div className="space-y-1.5">
         <Label htmlFor="purchase_price">Purchase Price (₹)</Label>
-        <Input id="purchase_price" name="purchase_price" type="number" min="0" step="0.01" placeholder="0.00" />
+        <Input id="purchase_price" name="purchase_price" type="number" min="0" step="0.01" defaultValue={item.purchase_price ?? ""} />
       </div>
 
       <div className="space-y-1.5">
@@ -111,14 +94,12 @@ export default function AddItemForm({ categories }: { categories: Category[] }) 
           id="description"
           name="description"
           rows={3}
-          placeholder="Optional notes about this item..."
+          defaultValue={item.description ?? ""}
           className="w-full border rounded-lg px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-ring resize-none"
         />
       </div>
 
-      <Button type="submit" disabled={pending} className="w-full">
-        {pending ? "Adding..." : "Add to Closet"}
-      </Button>
+      <Button type="submit" className="w-full">Save Changes</Button>
     </form>
   );
 }

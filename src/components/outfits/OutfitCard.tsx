@@ -1,4 +1,6 @@
 "use client";
+import { useTransition } from "react";
+import { toast } from "sonner";
 import { Shirt, Layers, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,8 +13,17 @@ interface OutfitWithItems extends Outfit {
 }
 
 export default function OutfitCard({ outfit }: { outfit: OutfitWithItems }) {
-  const handleDelete = async () => {
-    await deleteOutfit(outfit.outfit_id);
+  const [, startTransition] = useTransition();
+
+  const handleDelete = () => {
+    startTransition(async () => {
+      try {
+        await deleteOutfit(outfit.outfit_id);
+        toast.success("Outfit deleted.");
+      } catch {
+        toast.error("Failed to delete outfit.");
+      }
+    });
   };
 
   return (
@@ -54,11 +65,9 @@ export default function OutfitCard({ outfit }: { outfit: OutfitWithItems }) {
           )}
         </div>
 
-        <form action={handleDelete}>
-          <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive w-full text-xs">
+        <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive w-full text-xs" type="button" onClick={handleDelete}>
             <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete
           </Button>
-        </form>
       </div>
     </div>
   );
