@@ -1,21 +1,10 @@
 "use client";
-
 import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signUp } from "@/lib/actions/auth";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 
 export default function SignUpPage() {
   const [state, action, pending] = useActionState(signUp, null);
@@ -26,70 +15,85 @@ export default function SignUpPage() {
       toast.success(state.success);
       setTimeout(() => router.push("/signin"), 1500);
     }
-    if (state?.error) {
-      toast.error(state.error);
-    }
+    if (state?.error) toast.error(state.error);
   }, [state, router]);
 
   return (
-    <Card>
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl">Create an account</CardTitle>
-        <CardDescription>
-          Join ThreadShare to manage your wardrobe
-        </CardDescription>
-      </CardHeader>
-      <form action={action}>
-        <CardContent className="space-y-4">
-          {state?.error && (
-            <p className="text-sm text-destructive text-center">{state.error}</p>
-          )}
-          {state?.success && (
-            <p className="text-sm text-green-600 text-center">{state.success}</p>
-          )}
-          <div className="space-y-2">
-            <Label htmlFor="username">Username</Label>
-            <Input
-              id="username"
-              name="username"
-              placeholder="your_username"
-              required
-            />
+    <>
+      <div className="text-center mb-7">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Create an account</h1>
+        <p className="text-sm text-muted-foreground mt-1.5">Join ThreadShare to manage your wardrobe</p>
+      </div>
+
+      <form action={action} className="space-y-4">
+        {state?.error && (
+          <div className="text-sm text-destructive bg-destructive/10 border border-destructive/20 px-4 py-3 rounded-xl text-center">
+            {state.error}
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="you@example.com"
-              required
-            />
+        )}
+        {state?.success && (
+          <div className="text-sm text-emerald-600 bg-emerald-500/10 border border-emerald-500/20 px-4 py-3 rounded-xl text-center">
+            {state.success}
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              placeholder="At least 6 characters"
-              minLength={6}
-              required
-            />
-          </div>
-        </CardContent>
-        <CardFooter className="flex flex-col gap-4">
-          <Button type="submit" className="w-full" disabled={pending}>
-            {pending ? "Creating account..." : "Sign Up"}
-          </Button>
-          <p className="text-sm text-muted-foreground">
-            Already have an account?{" "}
-            <Link href="/signin" className="text-primary underline">
-              Sign in
-            </Link>
-          </p>
-        </CardFooter>
+        )}
+
+        <div className="space-y-1.5">
+          <label htmlFor="username" className="block text-xs font-bold tracking-[0.12em] uppercase text-muted-foreground">
+            Username
+          </label>
+          <Input
+            id="username"
+            name="username"
+            placeholder="your_username"
+            required
+            className="h-11 rounded-xl bg-input border-border text-foreground placeholder:text-muted-foreground/60"
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <label htmlFor="email" className="block text-xs font-bold tracking-[0.12em] uppercase text-muted-foreground">
+            Email
+          </label>
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="you@example.com"
+            required
+            className="h-11 rounded-xl bg-input border-border text-foreground placeholder:text-muted-foreground/60"
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <label htmlFor="password" className="block text-xs font-bold tracking-[0.12em] uppercase text-muted-foreground">
+            Password
+          </label>
+          <Input
+            id="password"
+            name="password"
+            type="password"
+            placeholder="At least 6 characters"
+            minLength={6}
+            required
+            className="h-11 rounded-xl bg-input border-border text-foreground placeholder:text-muted-foreground/60"
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={pending}
+          className="btn-primary w-full h-12 text-sm mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {pending ? "Creating account..." : "Sign Up →"}
+        </button>
+
+        <p className="text-sm text-center text-muted-foreground pt-1">
+          Already have an account?{" "}
+          <Link href="/signin" className="text-foreground font-semibold hover:opacity-80 transition-opacity">
+            Sign in
+          </Link>
+        </p>
       </form>
-    </Card>
+    </>
   );
 }

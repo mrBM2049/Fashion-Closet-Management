@@ -55,29 +55,29 @@ export default function CostPerWearTable({ rows }: { rows: CpwRow[] }) {
   }
 
   return (
-    <div className="border rounded-xl overflow-hidden">
-      <table className="w-full text-sm">
-        <thead className="bg-muted/50 text-muted-foreground">
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm min-w-[400px]">
+        <thead className="bg-foreground/4 text-muted-foreground">
           <tr>
             <Th label="Item"           k="name" />
-            <Th label="Purchase Price" k="purchase_price" />
-            <Th label="Times Worn"     k="wear_count" />
+            <Th label="Price"          k="purchase_price" />
+            <Th label="Wears"          k="wear_count" />
             <Th label="Cost / Wear"    k="cost_per_wear" />
           </tr>
         </thead>
         <tbody>
           {sorted.map((row) => (
-            <tr key={row.item_id} className="border-t hover:bg-muted/30 transition-colors">
+            <tr key={row.item_id} className="border-t border-border/40 hover:bg-foreground/3 transition-colors">
               <td className="px-4 py-2.5">
-                <p className="font-medium">{row.name}</p>
+                <p className="font-medium text-foreground/85">{row.name}</p>
                 {row.brand && <p className="text-xs text-muted-foreground">{row.brand}</p>}
               </td>
-              <td className="px-4 py-2.5">₹{Number(row.purchase_price).toFixed(2)}</td>
-              <td className="px-4 py-2.5">{row.wear_count}</td>
-              <td className="px-4 py-2.5 font-medium">
+              <td className="px-4 py-2.5 text-foreground/70">₹{Number(row.purchase_price).toFixed(0)}</td>
+              <td className="px-4 py-2.5 text-foreground/70">{row.wear_count}</td>
+              <td className="px-4 py-2.5 font-semibold text-foreground/85">
                 {row.cost_per_wear != null
                   ? `₹${Number(row.cost_per_wear).toFixed(2)}`
-                  : <span className="text-muted-foreground text-xs">Not worn yet</span>}
+                  : <span className="text-muted-foreground text-xs font-normal">Not worn</span>}
               </td>
             </tr>
           ))}

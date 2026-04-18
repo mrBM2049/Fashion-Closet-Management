@@ -57,26 +57,26 @@ export default function TransactionTable({
 
   if (rows.length === 0) {
     return (
-      <div className="text-center py-16 text-muted-foreground border rounded-xl">
-        <ArrowLeftRight className="w-10 h-10 mx-auto mb-3 opacity-30" />
-        <p className="font-medium">No transactions yet</p>
-        <p className="text-sm mt-1">Create your first sale or borrow record below.</p>
+      <div className="glass rounded-2xl flex flex-col items-center justify-center py-16 text-center">
+        <ArrowLeftRight className="w-10 h-10 mb-3 text-foreground/20" />
+        <p className="font-semibold text-foreground/50">No transactions yet</p>
+        <p className="text-sm text-foreground/30 mt-1">Create your first sale or borrow record below.</p>
       </div>
     );
   }
 
   return (
-    <div className="border rounded-xl overflow-hidden">
-      <table className="w-full text-sm">
-        <thead className="bg-muted/50 text-muted-foreground">
+    <div className="glass rounded-2xl overflow-x-auto">
+      <table className="w-full text-sm min-w-[600px]">
+        <thead className="border-b border-border/40">
           <tr>
-            <th className="text-left px-4 py-2.5 font-medium">Item</th>
-            <th className="text-left px-4 py-2.5 font-medium">Type</th>
-            <th className="text-left px-4 py-2.5 font-medium">Parties</th>
-            <th className="text-left px-4 py-2.5 font-medium">Amount</th>
-            <th className="text-left px-4 py-2.5 font-medium">Date</th>
-            <th className="text-left px-4 py-2.5 font-medium">Status</th>
-            <th className="text-left px-4 py-2.5 font-medium">Actions</th>
+            <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-foreground/40">Item</th>
+            <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-foreground/40">Type</th>
+            <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-foreground/40 hidden sm:table-cell">Parties</th>
+            <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-foreground/40">Amount</th>
+            <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-foreground/40 hidden sm:table-cell">Date</th>
+            <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-foreground/40">Status</th>
+            <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider text-foreground/40">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -86,14 +86,14 @@ export default function TransactionTable({
             const isUpdating = updating === row.txn_id && pending;
 
             return (
-              <tr key={row.txn_id} className="border-t hover:bg-muted/30 transition-colors">
-                <td className="px-4 py-3 font-medium">{row.item_name}</td>
+              <tr key={row.txn_id} className="border-t border-border/40 hover:bg-foreground/3 transition-colors">
+                <td className="px-4 py-3 font-medium text-foreground/85 max-w-[120px] truncate">{row.item_name}</td>
                 <td className="px-4 py-3">
                   <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${typeColor[row.txn_type]}`}>
                     {row.txn_type}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-muted-foreground text-xs">
+                <td className="px-4 py-3 text-muted-foreground text-xs hidden sm:table-cell">
                   <span className="text-foreground font-medium">{row.seller}</span>
                   <span className="mx-1">→</span>
                   <span className="text-foreground font-medium">{row.buyer}</span>
@@ -101,7 +101,7 @@ export default function TransactionTable({
                 <td className="px-4 py-3">
                   {row.amount != null ? `₹${Number(row.amount).toFixed(2)}` : <span className="text-muted-foreground">—</span>}
                 </td>
-                <td className="px-4 py-3 text-muted-foreground">
+                <td className="px-4 py-3 text-muted-foreground hidden sm:table-cell">
                   {new Date(row.txn_date).toLocaleDateString("en-IN", {
                     day: "numeric", month: "short", year: "numeric",
                   })}

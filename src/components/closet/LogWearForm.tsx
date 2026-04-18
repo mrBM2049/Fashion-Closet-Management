@@ -2,8 +2,7 @@
 import { useTransition, useRef } from "react";
 import { toast } from "sonner";
 import { logWear } from "@/lib/actions/items";
-import { Button } from "@/components/ui/button";
-import { CalendarCheck } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 export default function LogWearForm({ itemId }: { itemId: number }) {
   const [pending, startTransition] = useTransition();
@@ -16,7 +15,7 @@ export default function LogWearForm({ itemId }: { itemId: number }) {
     startTransition(async () => {
       try {
         await logWear(itemId, occasion);
-        toast.success("Wear logged successfully.");
+        toast.success("Wear logged.");
         ref.current?.reset();
       } catch {
         toast.error("Failed to log wear.");
@@ -25,16 +24,23 @@ export default function LogWearForm({ itemId }: { itemId: number }) {
   };
 
   return (
-    <form ref={ref} onSubmit={handleSubmit} className="flex gap-2 pt-2">
+    <form ref={ref} onSubmit={handleSubmit} className="space-y-2">
       <input
         name="occasion"
-        placeholder="Occasion (e.g. College)"
-        className="flex-1 border rounded-lg px-3 py-1.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+        placeholder="Occasion — e.g. College, Work, Party"
+        className="w-full h-10 rounded-xl px-4 text-sm
+                   bg-foreground/6 border border-border
+                   text-foreground placeholder:text-foreground/30
+                   focus:outline-none focus:ring-1 focus:ring-ring focus:bg-foreground/8
+                   transition-all"
       />
-      <Button type="submit" size="sm" disabled={pending}>
-        <CalendarCheck className="w-4 h-4 mr-1" />
-        {pending ? "Logging..." : "Log Wear"}
-      </Button>
+      <button
+        type="submit"
+        disabled={pending}
+        className="btn-primary w-full h-12 flex items-center justify-center gap-2 text-sm"
+      >
+        {pending ? "Logging..." : <><span>Log Wear</span> <ArrowRight className="w-4 h-4" /></>}
+      </button>
     </form>
   );
 }

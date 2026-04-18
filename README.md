@@ -43,19 +43,28 @@ npm install
 
 ### 2. Configure environment
 
-Create `.env.local` in the project root:
+Copy the example file and fill in your values:
+
+```bash
+cp .env.example .env.local
+```
+
+Then edit `.env.local`:
 
 ```env
 DB_HOST=127.0.0.1
 DB_USER=root
-DB_PASSWORD="your_mysql_password"
+DB_PASSWORD=your_mysql_password_here
 DB_NAME=threadshare
 
-AUTH_SECRET=any-32-char-random-string
+AUTH_SECRET=any-random-32-char-string
 AUTH_URL=http://localhost:3000
 ```
 
-> Use `127.0.0.1` instead of `localhost` — on Windows, `localhost` resolves via IPv6 which MySQL does not listen on by default.
+**Important:**
+- Use `127.0.0.1` not `localhost` on Windows — MySQL listens on IPv4, not IPv6
+- Do **not** wrap values in quotes — write `DB_PASSWORD=mypass` not `DB_PASSWORD="mypass"`
+- `.env.local` is gitignored and never committed — each developer needs their own copy
 
 ### 3. Create the database
 

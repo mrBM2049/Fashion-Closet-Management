@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { ChevronLeft, Plus } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { db } from "@/lib/db/client";
-import { Button } from "@/components/ui/button";
 import AddItemForm from "@/components/closet/AddItemForm";
 import { Category } from "@/types";
 
@@ -14,15 +13,17 @@ async function getCategories() {
 
 export default async function AddItemPage() {
   const categories = await getCategories();
-
   return (
-    <div className="space-y-6 max-w-lg">
-      <div className="flex items-center gap-3">
-        <Link href="/closet">
-          <Button variant="ghost" size="sm"><ChevronLeft className="w-4 h-4 mr-1" />Back</Button>
-        </Link>
-        <h1 className="text-2xl font-semibold"><Plus className="w-5 h-5 inline mr-1" />Add Item</h1>
-      </div>
+    <div className="space-y-4 pb-10">
+      {/* Back button */}
+      <Link
+        href="/closet"
+        className="inline-flex items-center gap-1.5 text-sm text-foreground/45
+                   hover:text-foreground transition-colors duration-150"
+      >
+        <ChevronLeft className="w-4 h-4" />
+        Back to Closet
+      </Link>
 
       <AddItemForm categories={categories} />
     </div>

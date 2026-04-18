@@ -57,14 +57,13 @@ export default async function TransactionsPage() {
   const total     = transactions.length;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 pb-10">
       <div>
-        <h1 className="text-2xl font-semibold flex items-center gap-2">
-          <ArrowLeftRight className="w-6 h-6" /> Transactions
+        <p className="text-[10px] font-bold tracking-[0.18em] uppercase text-foreground/30 mb-1.5">EXCHANGE HISTORY</p>
+        <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
+          <ArrowLeftRight className="w-6 h-6 text-foreground/40" /> Transactions
         </h1>
-        <p className="text-sm text-muted-foreground mt-0.5">
-          Sales and borrows involving your items
-        </p>
+        <p className="text-sm text-foreground/40 mt-1">Sales and borrows involving your items</p>
       </div>
 
       {/* Summary */}
@@ -88,23 +87,12 @@ export default async function TransactionsPage() {
   );
 }
 
-function StatCard({
-  label,
-  value,
-  accent,
-}: {
-  label: string;
-  value: string;
-  accent?: "yellow" | "green";
-}) {
-  const color =
-    accent === "yellow" ? "text-yellow-700" :
-    accent === "green"  ? "text-green-700"  : "";
-
+function StatCard({ label, value, accent }: { label: string; value: string; accent?: "yellow" | "green" }) {
+  const color = accent === "yellow" ? "text-amber-500" : accent === "green" ? "text-emerald-500" : "";
   return (
-    <div className="border rounded-xl px-4 py-4 bg-card">
-      <p className={`text-2xl font-semibold ${color}`}>{value}</p>
-      <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
+    <div className="glass-well rounded-2xl px-5 py-5">
+      <p className="text-xs font-semibold tracking-[0.12em] uppercase text-foreground/40 mb-2">{label}</p>
+      <p className={`text-3xl font-bold tracking-tight ${color}`}>{value}</p>
     </div>
   );
 }

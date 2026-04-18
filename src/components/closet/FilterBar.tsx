@@ -1,94 +1,92 @@
 "use client";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useCallback } from "react";
+import { Search, X } from "lucide-react";
+import GlassSelect from "@/components/ui/glass-select";
 import { Category } from "@/types";
 
-const SIZES = ["XS", "S", "M", "L", "XL", "XXL", "28", "30", "32", "34", "36"];
-const COLORS = ["Black", "White", "Grey", "Navy", "Blue", "Red", "Green", "Brown", "Beige", "Pink", "Yellow"];
-const STATUSES = ["Available", "Listed", "Sold"];
+const SIZES   = ["XS","S","M","L","XL","XXL","28","30","32","34","36"].map((s) => ({ value: s, label: s }));
+const COLORS  = ["Black","White","Grey","Navy","Blue","Red","Green","Brown","Beige","Pink","Yellow"].map((c) => ({ value: c, label: c }));
+const STATUSES = ["Available","Listed","Sold"].map((s) => ({ value: s, label: s }));
 
 export default function FilterBar({ categories }: { categories: Category[] }) {
-  const router = useRouter();
-  const pathname = usePathname();
+  const router       = useRouter();
+  const pathname     = usePathname();
   const searchParams = useSearchParams();
 
-  const setParam = useCallback(
-    (key: string, value: string) => {
-      const params = new URLSearchParams(searchParams.toString());
-      if (value) {
-        params.set(key, value);
-      } else {
-        params.delete(key);
-      }
-      router.push(`${pathname}?${params.toString()}`);
-    },
-    [router, pathname, searchParams]
-  );
+  const setParam = useCallback((key: string, value: string) => {
+    const p = new URLSearchParams(searchParams.toString());
+    value ? p.set(key, value) : p.delete(key);
+    router.push(`${pathname}?${p.toString()}`);
+  }, [router, pathname, searchParams]);
 
-  const current = (key: string) => searchParams.get(key) ?? "";
+  const current    = (key: string) => searchParams.get(key) ?? "";
+  const hasFilters = searchParams.toString().length > 0;
+
+  const catOptions = categories.map((c) => ({ value: String(c.cat_id), label: c.name }));
 
   return (
-    <div className="flex flex-wrap gap-3 items-center">
-      <input
-        type="search"
-        placeholder="Search items..."
-        defaultValue={current("search")}
-        onChange={(e) => setParam("search", e.target.value)}
-        className="border rounded-lg px-3 py-1.5 text-sm bg-background w-48 focus:outline-none focus:ring-2 focus:ring-ring"
+    <div className="flex flex-wrap items-center gap-2">
+      {/* Search */}
+      <div className="relative flex-1 min-w-[160px] max-w-xs">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-foreground/30 pointer-events-none" />
+        <input
+          type="search"
+          placeholder="Search items..."
+          defaultValue={current("search")}
+          onChange={(e) => setParam("search", e.target.value)}
+          className="w-full h-10 pl-9 pr-3 rounded-xl text-sm
+                     bg-foreground/6 border border-border text-foreground
+                     placeholder:text-foreground/30
+                     focus:outline-none focus:ring-1 focus:ring-ring focus:bg-foreground/8
+                     transition-all"
+        />
+      </div>
+
+      <GlassSelect
+        name="cat_id_filter"
+        value={current("cat_id")}
+        placeholder="Category"
+        options={catOptions}
+        onChange={(v) => setParam("cat_id", v)}
+        className="w-36"
       />
 
-      <select
-        value={current("cat_id")}
-        onChange={(e) => setParam("cat_id", e.target.value)}
-        className="border rounded-lg px-3 py-1.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-      >
-        <option value="">All Categories</option>
-        {categories.map((c) => (
-          <option key={c.cat_id} value={c.cat_id}>
-            {c.name}
-          </option>
-        ))}
-      </select>
-
-      <select
+      <GlassSelect
+        name="color_filter"
         value={current("color")}
-        onChange={(e) => setParam("color", e.target.value)}
-        className="border rounded-lg px-3 py-1.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-      >
-        <option value="">All Colors</option>
-        {COLORS.map((c) => (
-          <option key={c} value={c}>{c}</option>
-        ))}
-      </select>
+        placeholder="Color"
+        options={COLORS}
+        onChange={(v) => setParam("color", v)}
+        className="w-32"
+      />
 
-      <select
+      <GlassSelect
+        name="size_filter"
         value={current("size")}
-        onChange={(e) => setParam("size", e.target.value)}
-        className="border rounded-lg px-3 py-1.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-      >
-        <option value="">All Sizes</option>
-        {SIZES.map((s) => (
-          <option key={s} value={s}>{s}</option>
-        ))}
-      </select>
+        placeholder="Size"
+        options={SIZES}
+        onChange={(v) => setParam("size", v)}
+        className="w-28"
+      />
 
-      <select
+      <GlassSelect
+        name="status_filter"
         value={current("status")}
-        onChange={(e) => setParam("status", e.target.value)}
-        className="border rounded-lg px-3 py-1.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-      >
-        <option value="">All Status</option>
-        {STATUSES.map((s) => (
-          <option key={s} value={s}>{s}</option>
-        ))}
-      </select>
+        placeholder="Status"
+        options={STATUSES}
+        onChange={(v) => setParam("status", v)}
+        className="w-32"
+      />
 
-      {searchParams.toString() && (
+      {hasFilters && (
         <button
           onClick={() => router.push(pathname)}
-          className="text-sm text-muted-foreground hover:text-foreground underline"
+          className="flex items-center gap-1 h-10 px-3 rounded-xl text-xs font-medium
+                     text-foreground/45 hover:text-foreground border border-border/60
+                     hover:bg-foreground/5 transition-all"
         >
-          Clear filters
+          <X className="w-3 h-3" /> Clear
         </button>
       )}
     </div>

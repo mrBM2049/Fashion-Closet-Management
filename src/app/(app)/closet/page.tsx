@@ -3,7 +3,6 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { db } from "@/lib/db/client";
 import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import ClosetGrid from "@/components/closet/ClosetGrid";
 import FilterBar from "@/components/closet/FilterBar";
 import { InventoryItem, Category } from "@/types";
@@ -17,27 +16,21 @@ async function getItems(userId: string, params: Record<string, string>) {
 
   if (search) {
     const [rows] = await db.execute(
-      `SELECT ii.*, c.name AS category_name
-       FROM   Inventory_Items ii
+      `SELECT ii.*, c.name AS category_name FROM Inventory_Items ii
        LEFT JOIN Categories c ON c.cat_id = ii.cat_id
-       WHERE  ii.user_id = ?
-         AND  MATCH(ii.name, ii.brand, ii.description) AGAINST(? IN BOOLEAN MODE)
-       ORDER  BY ii.created_at DESC`,
+       WHERE ii.user_id = ? AND MATCH(ii.name, ii.brand, ii.description) AGAINST(? IN BOOLEAN MODE)
+       ORDER BY ii.created_at DESC`,
       [userId, search]
     );
     return rows as InventoryItem[];
   }
-
   const [rows] = await db.execute(
-    `SELECT ii.*, c.name AS category_name
-     FROM   Inventory_Items ii
+    `SELECT ii.*, c.name AS category_name FROM Inventory_Items ii
      LEFT JOIN Categories c ON c.cat_id = ii.cat_id
-     WHERE  ii.user_id = ?
-       AND  (? IS NULL OR ii.cat_id = ?)
-       AND  (? IS NULL OR ii.color  = ?)
-       AND  (? IS NULL OR ii.size   = ?)
-       AND  (? IS NULL OR ii.status = ?)
-     ORDER  BY ii.created_at DESC`,
+     WHERE ii.user_id = ?
+       AND (? IS NULL OR ii.cat_id=?) AND (? IS NULL OR ii.color=?)
+       AND (? IS NULL OR ii.size=?)   AND (? IS NULL OR ii.status=?)
+     ORDER BY ii.created_at DESC`,
     [userId, catId, catId, color, color, size, size, status, status]
   );
   return rows as InventoryItem[];
@@ -56,8 +49,8 @@ export default async function ClosetPage({
   searchParams: Promise<Record<string, string>>;
 }) {
   const session = await auth();
-  const userId = (session?.user as any)?.userId as string;
-  const params = await searchParams;
+  const userId  = (session?.user as any)?.userId as string;
+  const params  = await searchParams;
 
   const [items, categories] = await Promise.all([
     getItems(userId, params),
@@ -65,21 +58,35 @@ export default async function ClosetPage({
   ]);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 pb-10">
+      {/* Header */}
+      <div className="flex items-end justify-between pt-1">
         <div>
-          <h1 className="text-2xl font-semibold">My Closet</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">{items.length} items</p>
+          <p className="text-[10px] font-bold tracking-[0.18em] uppercase text-foreground/30 mb-1.5">
+            MY WARDROBE
+          </p>
+          <h1 className="text-3xl font-bold tracking-tight">Your Closet</h1>
+          <p className="text-sm text-foreground/40 mt-1">
+            {items.length} {items.length === 1 ? "item" : "items"}
+          </p>
         </div>
-        <Link href="/closet/add">
-          <Button><Plus className="w-4 h-4 mr-1" />Add Item</Button>
+        <Link
+          href="/closet/add"
+          className="btn-primary flex items-center gap-2 px-5 py-2.5 text-sm"
+        >
+          <Plus className="w-4 h-4" />
+          Add Item
         </Link>
       </div>
 
-      <Suspense>
-        <FilterBar categories={categories} />
-      </Suspense>
+      {/* Filter bar */}
+      <div className="glass rounded-2xl px-4 py-3">
+        <Suspense fallback={null}>
+          <FilterBar categories={categories} />
+        </Suspense>
+      </div>
 
+      {/* Grid */}
       <ClosetGrid items={items} />
     </div>
   );

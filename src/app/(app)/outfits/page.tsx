@@ -55,25 +55,30 @@ export default async function OutfitsPage() {
   const outfits = await getOutfits(userId);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 pb-10">
+      <div className="flex items-end justify-between pt-1">
         <div>
-          <h1 className="text-2xl font-semibold">Outfits</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">{outfits.length} saved looks</p>
+          <p className="text-[10px] font-bold tracking-[0.18em] uppercase text-foreground/30 mb-1.5">SAVED LOOKS</p>
+          <h1 className="text-3xl font-bold tracking-tight">Outfits</h1>
+          <p className="text-sm text-foreground/40 mt-1">{outfits.length} saved looks</p>
         </div>
-        <Link href="/outfits/create">
-          <Button><Plus className="w-4 h-4 mr-1" />Create Outfit</Button>
+        <Link href="/outfits/create" className="btn-primary flex items-center gap-2 px-5 py-2.5 text-sm">
+          <Plus className="w-4 h-4" />Create Outfit
         </Link>
       </div>
 
       {outfits.length === 0 ? (
-        <div className="text-center py-20 text-muted-foreground">
-          <Layers className="w-12 h-12 mx-auto mb-4 opacity-30" />
-          <p className="text-lg font-medium">No outfits yet</p>
-          <p className="text-sm mt-1">Create your first look from your closet items.</p>
+        <div className="glass rounded-3xl flex flex-col items-center justify-center py-28 text-center gap-4">
+          <div className="w-16 h-16 rounded-2xl glass-well flex items-center justify-center">
+            <Layers className="w-8 h-8 text-foreground/25" />
+          </div>
+          <div>
+            <p className="text-base font-semibold text-foreground/60">No outfits yet</p>
+            <p className="text-sm text-foreground/30 mt-1">Create your first look from your closet items.</p>
+          </div>
         </div>
       ) : (
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {outfits.map((outfit) => (
             <OutfitCard key={outfit.outfit_id} outfit={outfit} />
           ))}

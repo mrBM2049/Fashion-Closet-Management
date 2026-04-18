@@ -1,14 +1,15 @@
 "use client";
 import { useState, useActionState, useEffect } from "react";
 import { toast } from "sonner";
-import { Shirt } from "lucide-react";
+import { Shirt, ArrowRight } from "lucide-react";
 import { createOutfit } from "@/lib/actions/outfits";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import GlassSelect from "@/components/ui/glass-select";
 import { InventoryItem } from "@/types";
 
-const OCCASIONS = ["Casual", "Formal", "Party", "College", "Work", "Sport", "Date", "Travel"];
+const OCCASIONS = ["Casual","Formal","Party","College","Work","Sport","Date","Travel"].map(
+  (o) => ({ value: o, label: o })
+);
 
 type State = { error?: string } | null;
 
@@ -20,6 +21,14 @@ async function createOutfitAction(_prev: State, formData: FormData): Promise<Sta
     if (e?.digest?.startsWith("NEXT_REDIRECT")) throw e;
     return { error: e.message ?? "Failed to save outfit" };
   }
+}
+
+function FieldLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-[10px] font-bold tracking-[0.14em] uppercase text-foreground/35 mb-1.5">
+      {children}
+    </p>
+  );
 }
 
 export default function OutfitBuilder({ items }: { items: InventoryItem[] }) {
@@ -40,41 +49,47 @@ export default function OutfitBuilder({ items }: { items: InventoryItem[] }) {
 
   return (
     <form action={formAction} className="space-y-6">
+      {/* Name + Occasion row */}
       <div className="grid sm:grid-cols-2 gap-4">
-        <div className="space-y-1.5">
-          <Label htmlFor="name">Outfit Name *</Label>
-          <Input id="name" name="name" placeholder="e.g. Monday Fit" required />
+        <div>
+          <FieldLabel>Outfit Name *</FieldLabel>
+          <Input
+            id="name"
+            name="name"
+            placeholder="e.g. Monday Fit"
+            required
+            className="bg-foreground/6 border-border text-foreground placeholder:text-foreground/30 h-10 rounded-xl"
+          />
         </div>
-
-        <div className="space-y-1.5">
-          <Label htmlFor="occasion_tag">Occasion</Label>
-          <select
-            id="occasion_tag"
+        <div>
+          <FieldLabel>Occasion</FieldLabel>
+          <GlassSelect
             name="occasion_tag"
-            className="w-full border rounded-lg px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-ring"
-          >
-            <option value="">Select occasion</option>
-            {OCCASIONS.map((o) => (
-              <option key={o} value={o}>{o}</option>
-            ))}
-          </select>
+            placeholder="Select occasion"
+            options={OCCASIONS}
+          />
         </div>
       </div>
 
+      {/* Item picker */}
       <div className="space-y-2">
-        <Label>Select Items * ({selected.size} selected)</Label>
+        <FieldLabel>Select Items * ({selected.size} selected)</FieldLabel>
         {items.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No items in your closet yet.</p>
+          <div className="glass rounded-2xl px-6 py-10 text-center text-foreground/35 text-sm">
+            No items in your closet yet. Add some items first.
+          </div>
         ) : (
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3 max-h-[480px] overflow-y-auto pr-1">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 max-h-[480px] overflow-y-auto pr-1">
             {items.map((item) => {
               const isSelected = selected.has(item.item_id);
               return (
                 <label
                   key={item.item_id}
-                  className={`cursor-pointer rounded-xl border-2 overflow-hidden transition-all ${
-                    isSelected ? "border-primary ring-2 ring-primary/30" : "border-border"
-                  }`}
+                  className={`cursor-pointer rounded-2xl overflow-hidden transition-all duration-200
+                    ${isSelected
+                      ? "ring-2 ring-primary border-2 border-primary"
+                      : "border-2 border-border hover:border-foreground/20"
+                    }`}
                 >
                   <input
                     type="checkbox"
@@ -84,20 +99,33 @@ export default function OutfitBuilder({ items }: { items: InventoryItem[] }) {
                     onChange={() => toggle(item.item_id)}
                     className="sr-only"
                   />
-                  <div className="aspect-square bg-muted">
+                  <div className="aspect-square bg-foreground/5 relative overflow-hidden">
                     {item.image_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+                      <img
+                        src={item.image_url}
+                        alt={item.name}
+                        className="w-full h-full object-cover"
+                      />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                        <Shirt className="w-8 h-8 opacity-30" />
+                      <div className="w-full h-full flex items-center justify-center text-foreground/20">
+                        <Shirt className="w-8 h-8" />
+                      </div>
+                    )}
+                    {isSelected && (
+                      <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                          <svg className="w-3.5 h-3.5 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
                       </div>
                     )}
                   </div>
-                  <div className="p-2">
-                    <p className="text-xs font-medium truncate">{item.name}</p>
+                  <div className="px-2.5 py-2 bg-card">
+                    <p className="text-xs font-semibold truncate text-foreground/85">{item.name}</p>
                     {item.brand && (
-                      <p className="text-xs text-muted-foreground truncate">{item.brand}</p>
+                      <p className="text-[10px] text-foreground/40 truncate">{item.brand}</p>
                     )}
                   </div>
                 </label>
@@ -108,12 +136,18 @@ export default function OutfitBuilder({ items }: { items: InventoryItem[] }) {
       </div>
 
       {state?.error && (
-        <p className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-lg">{state.error}</p>
+        <div className="text-sm text-destructive bg-destructive/10 border border-destructive/20 px-4 py-3 rounded-xl">
+          {state.error}
+        </div>
       )}
 
-      <Button type="submit" disabled={selected.size === 0 || pending} className="w-full sm:w-auto">
-        {pending ? "Saving..." : "Save Outfit"}
-      </Button>
+      <button
+        type="submit"
+        disabled={selected.size === 0 || pending}
+        className="btn-primary flex items-center gap-2 px-6 h-12 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+      >
+        {pending ? "Saving..." : <><span>Save Outfit</span><ArrowRight className="w-4 h-4" /></>}
+      </button>
     </form>
   );
 }
