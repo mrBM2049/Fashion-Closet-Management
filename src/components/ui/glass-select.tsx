@@ -10,7 +10,9 @@ interface Option {
 interface GlassSelectProps {
   id?: string;
   name: string;
+  /** Controlled value — use this OR defaultValue, not both */
   value?: string;
+  /** Uncontrolled default */
   defaultValue?: string;
   placeholder?: string;
   options: Option[];
@@ -30,34 +32,40 @@ export default function GlassSelect({
   required,
   className = "",
 }: GlassSelectProps) {
-  const [open, setOpen]   = useState(false);
-  const [val, setVal]     = useState(defaultValue);
-  const ref               = useRef<HTMLDivElement>(null);
+  const isControlled = controlledValue !== undefined;
 
-  const current = controlledValue !== undefined ? controlledValue : val;
+  // Internal state only used when uncontrolled
+  const [internalVal, setInternalVal] = useState(defaultValue);
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // The single source of truth for the current value
+  const current = isControlled ? controlledValue : internalVal;
   const selected = options.find((o) => o.value === current);
 
-  // Close on outside click
+  // Close dropdown on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
   const choose = (v: string) => {
-    setVal(v);
+    if (!isControlled) setInternalVal(v);
     onChange?.(v);
     setOpen(false);
   };
 
   return (
     <div ref={ref} className={`relative ${className}`}>
-      {/* Hidden native input for form submission */}
+      {/* Hidden input for form submission */}
       <input type="hidden" name={name} value={current} required={required} />
 
-      {/* Trigger */}
+      {/* Trigger button */}
       <button
         type="button"
         id={id}
@@ -73,16 +81,16 @@ export default function GlassSelect({
           {selected ? selected.label : placeholder}
         </span>
         <ChevronDown
-          className={`w-4 h-4 text-foreground/40 shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          className={`w-4 h-4 text-foreground/40 shrink-0 transition-transform duration-200
+                      ${open ? "rotate-180" : ""}`}
         />
       </button>
 
-      {/* Dropdown */}
+      {/* Dropdown panel */}
       {open && (
         <div
           className="absolute z-50 top-[calc(100%+6px)] left-0 right-0
-                     rounded-2xl overflow-hidden
-                     border border-border
+                     rounded-2xl overflow-hidden border border-border
                      shadow-[0_8px_32px_rgba(0,0,0,0.25)]"
           style={{
             background: "var(--popover)",
@@ -91,7 +99,7 @@ export default function GlassSelect({
           }}
         >
           <div className="max-h-56 overflow-y-auto py-1.5">
-            {/* Empty / placeholder option */}
+            {/* Placeholder / clear option */}
             {!required && (
               <button
                 type="button"
@@ -103,6 +111,7 @@ export default function GlassSelect({
                 {current === "" && <Check className="w-3.5 h-3.5 text-foreground/40" />}
               </button>
             )}
+
             {options.map((opt) => (
               <button
                 key={opt.value}
@@ -113,7 +122,10 @@ export default function GlassSelect({
               >
                 <span>{opt.label}</span>
                 {current === opt.value && (
-                  <Check className="w-3.5 h-3.5 shrink-0" style={{ color: "var(--primary)" }} />
+                  <Check
+                    className="w-3.5 h-3.5 shrink-0"
+                    style={{ color: "var(--primary)" }}
+                  />
                 )}
               </button>
             ))}

@@ -13,9 +13,12 @@ interface Props {
 export default function MobileTopBar({ username, signOutAction }: Props) {
   const [visible, setVisible] = useState(true);
   const lastY = useRef(0);
+  const mounted = useRef(false);
 
   useEffect(() => {
+    mounted.current = true;
     const onScroll = () => {
+      if (!mounted.current) return;
       const y = window.scrollY;
       if (y < 10) {
         setVisible(true);
@@ -27,7 +30,10 @@ export default function MobileTopBar({ username, signOutAction }: Props) {
       lastY.current = y;
     };
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      mounted.current = false;
+      window.removeEventListener("scroll", onScroll);
+    };
   }, []);
 
   return (
