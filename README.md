@@ -5,19 +5,71 @@ Manage your clothing inventory, build outfits, track wear history, and view cost
 
 ---
 
+## 📊 Project Flow
+
+```mermaid
+graph TD
+    User((User)) --> Auth{Authentication}
+    Auth -- Success --> Dashboard[Closet Dashboard]
+    Auth -- Fail --> SignIn[Sign In / Sign Up]
+
+    Dashboard --> Items[Inventory Items]
+    Dashboard --> Outfits[Outfits]
+    Dashboard --> Analytics[Analytics]
+    Dashboard --> Transactions[Transactions]
+
+    Items --> AddItem[Add Item]
+    Items --> EditItem[Edit/Delete Item]
+    Items --> LogWear[Log Wear Entry]
+
+    LogWear --> Trigger[Trig: Increment Wear Count]
+    
+    Outfits --> CreateOutfit[Create Outfit Builder]
+    CreateOutfit --> DB_Transaction[DB Atomic Transaction]
+
+    Transactions --> Sale[Record Sale]
+    Sale --> TriggerStatus[Trig: Mark as Sold]
+
+    Analytics --> CPW_View[v_cost_per_wear View]
+```
+
+---
+
+## ⚙️ Code Flow (Debug Guide)
+
+Use this flow to trace data from the UI to the database.
+
+```mermaid
+sequenceDiagram
+    participant UI as Client Component (UI)
+    participant Action as Server Action (src/lib/actions)
+    participant DB as DB Client (src/lib/db/client.ts)
+    participant PG as PostgreSQL DB
+
+    UI->>Action: Call action(formData)
+    Action->>Action: auth() check (verify session)
+    Action->>DB: db.execute(sql, params)
+    DB->>DB: Convert MySQL syntax to PG ($1, etc.)
+    DB->>PG: query(convertedSql, params)
+    PG-->>DB: return result
+    DB-->>Action: return [rows/insertId]
+    Action->>Action: revalidatePath() (clear cache)
+    Action->>UI: redirect() or return status
+```
+
+---
+
 ## Tech Stack
 
 | Layer | Technology | Version |
 |-------|-----------|---------|
 | Framework | Next.js (App Router, Turbopack) | 16.2.3 |
-| Language | TypeScript | v6 |
+| Language | TypeScript | v5 |
 | UI | React | 19.2.4 |
-| Styling | Tailwind CSS (CSS-first, no config file) | v4 |
-| Components | shadcn/ui (new-york style, OKLCH colors) | latest |
-| Icons | lucide-react | latest |
+| Styling | Tailwind CSS v4 | v4 |
 | Auth | Auth.js (NextAuth v5 beta) | 5.0.0-beta.30 |
-| Database | MySQL 8.0 via XAMPP | — |
-| DB Driver | mysql2 (Promise API) | 3.21.1 |
+| Database | PostgreSQL (Supabase/Hosted) | — |
+| DB Driver | pg (Postgres Node.js) | 8.21.0 |
 | Passwords | bcryptjs | 3.x |
 | Toasts | sonner | 2.x |
 
@@ -26,7 +78,7 @@ Manage your clothing inventory, build outfits, track wear history, and view cost
 ## Prerequisites
 
 - Node.js 22 LTS
-- MySQL 8.0 running locally (XAMPP or MySQL Workbench)
+- PostgreSQL Database (Supabase or local Postgres)
 - Git
 
 ---
@@ -52,41 +104,21 @@ cp .env.example .env.local
 Then edit `.env.local`:
 
 ```env
-DB_HOST=127.0.0.1
-DB_USER=root
-DB_PASSWORD=your_mysql_password_here
-DB_NAME=threadshare
+DATABASE_URL=postgresql://user:password@host:port/dbname
 
 AUTH_SECRET=any-random-32-char-string
 AUTH_URL=http://localhost:3000
 ```
 
-**Important:**
-- Use `127.0.0.1` not `localhost` on Windows — MySQL listens on IPv4, not IPv6
-- Do **not** wrap values in quotes — write `DB_PASSWORD=mypass` not `DB_PASSWORD="mypass"`
-- `.env.local` is gitignored and never committed — each developer needs their own copy
-
-### 3. Create the database
-
-In MySQL Workbench or CLI:
-
-```sql
-CREATE DATABASE threadshare
-  CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
-```
-
-### 4. Run schema and seed
+### 3. Run schema and seed
 
 ```bash
-# Via MySQL CLI
-mysql -u root -p threadshare < database/schema.sql
-mysql -u root -p threadshare < database/seed.sql
+# Via psql or your DB client
+psql -d your_db_name -f database/schema_postgres.sql
+psql -d your_db_name -f database/seed_postgres.sql
 ```
 
-Or open each file in MySQL Workbench and execute.
-
-### 5. Start the dev server
+### 4. Start the dev server
 
 ```bash
 npm run dev
@@ -102,7 +134,7 @@ Open [http://localhost:3000](http://localhost:3000).
 |--------|------|---------|
 | `Users` | Table | Registered users |
 | `Categories` | Table | Self-referencing clothing categories |
-| `Inventory_Items` | Table | Core wardrobe items (FULLTEXT indexed) |
+| `Inventory_Items` | Table | Core wardrobe items |
 | `Wear_Log` | Table | Per-item wear history |
 | `Outfits` | Table | Named outfit collections |
 | `Outfit_Items` | Table | M:N junction — outfits ↔ items |
@@ -123,39 +155,17 @@ Open [http://localhost:3000](http://localhost:3000).
 | `/signin` | Sign in with email + password |
 | `/signup` | Create a new account |
 
-> Logged-in users visiting `/signin` or `/signup` are automatically redirected to `/closet`.
-
 ### Protected routes (login required)
-
-Unauthenticated access to any route below redirects to `/signin`.
 
 | Route | Description |
 |-------|-------------|
 | `/closet` | Pinterest-style wardrobe grid with filter bar |
 | `/closet/add` | Add a new clothing item |
 | `/closet/[itemId]` | Item detail — wear log, log wear, edit, delete |
-| `/closet/[itemId]/edit` | Edit item details |
 | `/outfits` | Gallery of saved outfit looks |
 | `/outfits/create` | Build a new outfit by selecting closet items |
-| `/analytics` | Cost-per-wear table, most-worn, never-worn *(Phase 5)* |
-| `/transactions` | Transaction history and create form *(Phase 6)* |
-
-### API routes
-
-| Method | Route | Description |
-|--------|-------|-------------|
-| GET | `/api/items` | Fetch items with filters (cat, color, size, status, FULLTEXT search) |
-| GET | `/api/items/[itemId]` | Single item + wear log |
-| PATCH | `/api/items/[itemId]` | Update item |
-| DELETE | `/api/items/[itemId]` | Delete item |
-| POST | `/api/items/[itemId]/wear` | Log a wear entry (calls stored procedure) |
-| GET | `/api/categories` | All categories |
-| GET | `/api/outfits` | List outfits with item count |
-| POST | `/api/outfits` | Create outfit (atomic transaction) |
-| GET | `/api/outfits/[outfitId]` | Outfit detail with items (M:N join) |
-| DELETE | `/api/outfits/[outfitId]` | Delete outfit |
-| GET | `/api/auth/[...nextauth]` | Auth.js v5 handler |
-| POST | `/api/auth/[...nextauth]` | Auth.js v5 handler |
+| `/analytics` | Cost-per-wear table and metrics |
+| `/transactions` | Transaction history |
 
 ---
 
@@ -163,62 +173,42 @@ Unauthenticated access to any route below redirects to `/signin`.
 
 ```
 src/
-├── auth.ts                          # Auth.js v5 full config (Node.js runtime)
-├── auth.config.ts                   # Edge-safe auth config (middleware only)
-├── middleware.ts                    # Route protection + auth redirect
+├── auth.ts                          # Auth.js v5 full config
+├── auth.config.ts                   # Edge-safe auth config (middleware)
 │
 ├── app/
-│   ├── layout.tsx                   # Root layout — fonts, Toaster
-│   ├── globals.css                  # Tailwind v4 CSS-first + OKLCH theme
-│   ├── (auth)/
-│   │   ├── layout.tsx               # Centered auth layout
-│   │   ├── signin/page.tsx          # Sign-in form
-│   │   └── signup/page.tsx          # Sign-up form
-│   ├── (app)/
-│   │   ├── layout.tsx               # App shell with Navbar
-│   │   ├── closet/
-│   │   │   ├── page.tsx             # Wardrobe grid + FilterBar
-│   │   │   ├── add/page.tsx         # Add item
-│   │   │   └── [itemId]/
-│   │   │       ├── page.tsx         # Item detail + wear log
-│   │   │       └── edit/page.tsx    # Edit item
-│   │   ├── outfits/
-│   │   │   ├── page.tsx             # Outfit gallery
-│   │   │   └── create/page.tsx      # Outfit builder
-│   │   ├── analytics/page.tsx       # Analytics dashboard (Phase 5)
-│   │   └── transactions/page.tsx    # Transactions (Phase 6)
-│   └── api/
-│       ├── auth/[...nextauth]/      # Auth.js handler
-│       ├── items/                   # Items CRUD + wear logging
-│       ├── outfits/                 # Outfits CRUD
-│       └── categories/              # Categories list
+│   ├── layout.tsx                   # Root layout
+│   ├── (auth)/                      # Auth routes group
+│   ├── (app)/                       # Protected app routes group
+│   └── api/                         # Next.js API Routes
 │
 ├── components/
-│   ├── layout/Navbar.tsx            # Top navigation
-│   ├── closet/
-│   │   ├── ItemCard.tsx             # Item tile
-│   │   ├── ClosetGrid.tsx           # CSS auto-fill grid
-│   │   ├── FilterBar.tsx            # URL-param filters
-│   │   └── AddItemForm.tsx          # Add item form
-│   ├── outfits/
-│   │   ├── OutfitCard.tsx           # Outfit card with thumbnails
-│   │   └── OutfitBuilder.tsx        # Checkbox item picker
-│   └── ui/                          # shadcn/ui components
+│   ├── layout/                      # Navbar, Sidebar
+│   ├── closet/                      # Closet specific components
+│   └── ui/                          # Shared UI (shadcn)
 │
 ├── lib/
-│   ├── db/client.ts                 # mysql2 connection pool
-│   ├── actions/
-│   │   ├── auth.ts                  # signUp, signInUser
-│   │   ├── items.ts                 # addItem, updateItem, deleteItem, logWear
-│   │   └── outfits.ts               # createOutfit, deleteOutfit
-│   └── utils.ts                     # cn() className utility
+│   ├── db/client.ts                 # PostgreSQL client with MySQL compatibility layer
+│   ├── actions/                     # Server Actions (Business Logic)
+│   └── utils.ts                     # Utilities
 │
-├── types/index.ts                   # TypeScript interfaces for all DB entities
 └── database/
-    ├── schema.sql                   # Full DDL — tables, triggers, view, indexes
-    ├── seed.sql                     # Sample data
-    └── queries.sql                  # Viva reference queries
+    ├── schema_postgres.sql          # Postgres DDL
+    └── seed_postgres.sql            # Sample data
 ```
+
+---
+
+## Progress
+
+- [x] Phase 1 — Project Setup & Database
+- [x] Phase 2 — Authentication
+- [x] Phase 3 — Closet
+- [x] Phase 4 — Outfits
+- [x] Phase 5 — Analytics
+- [x] Phase 6 — Transactions
+- [x] Phase 7 — Polish & Seed Data
+
 
 ---
 
@@ -254,15 +244,3 @@ npm run build   # production build
 npm run dev     # development server (Turbopack)
 npx tsc --noEmit  # type check only
 ```
-
----
-
-## Progress
-
-- [x] Phase 1 — Project Setup & Database
-- [x] Phase 2 — Authentication
-- [x] Phase 3 — Closet
-- [x] Phase 4 — Outfits
-- [ ] Phase 5 — Analytics
-- [ ] Phase 6 — Transactions
-- [ ] Phase 7 — Polish & Seed Data
