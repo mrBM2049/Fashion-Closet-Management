@@ -25,9 +25,7 @@ export async function POST(req: NextRequest) {
       throw new Error("Missing BLOB_READ_WRITE_TOKEN. Please configure it in Vercel or .env.local");
     }
 
-    const blob = await put(file.name, file, {
-      access: "public",
-    });
+    const blob = await put(file.name, file);
 
     return NextResponse.json({ url: blob.url });
   } catch (error: any) {
