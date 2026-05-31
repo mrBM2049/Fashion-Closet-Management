@@ -36,7 +36,7 @@ export default function EditItemForm({
 
         {/* LEFT — image */}
         <div className="relative bg-foreground/4 flex flex-col items-center justify-center p-8 gap-4 min-h-[360px]">
-          <div className="w-full max-w-[220px]">
+          <div className="w-full max-w-[280px]">
             <ImageUploader currentUrl={item.image_url} onUpload={(url) => setImageUrl(url)} />
           </div>
         </div>

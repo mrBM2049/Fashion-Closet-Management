@@ -1,11 +1,11 @@
-# ThreadShare — Fashion Closet Management System
+# ThreadShare - Fashion Closet Management System
 
 A full-stack wardrobe management web app built as a DBMS college project at PDEU.
 Manage your clothing inventory, build outfits, track wear history, and view cost-per-wear analytics.
 
 ---
 
-## 📊 Project Flow
+## Project Flow
 
 ```mermaid
 graph TD
@@ -35,7 +35,7 @@ graph TD
 
 ---
 
-## ⚙️ Code Flow (Debug Guide)
+## Code Flow (Debug Guide)
 
 Use this flow to trace data from the UI to the database.
 
@@ -72,6 +72,7 @@ sequenceDiagram
 | DB Driver | pg (Postgres Node.js) | 8.21.0 |
 | Passwords | bcryptjs | 3.x |
 | Toasts | sonner | 2.x |
+| Deployment | Vercel | latest |
 
 ---
 
@@ -124,7 +125,27 @@ psql -d your_db_name -f database/seed_postgres.sql
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open http://localhost:3000.
+
+---
+
+## Vercel Deployment
+
+This project is optimized for Vercel.
+
+**Live Demo:** https://fashion-closet-management.vercel.app
+
+### Environment Variables on Vercel
+When deploying to Vercel, ensure the following environment variables are set in the Vercel Dashboard:
+- `DATABASE_URL`: Your production PostgreSQL connection string.
+- `AUTH_SECRET`: A random 32-character string.
+- `AUTH_URL`: Your production deployment URL (e.g., https://fashion-closet-management.vercel.app).
+
+### Deployment Steps
+1. Push your code to a GitHub repository.
+2. Import the project into Vercel.
+3. Add the environment variables.
+4. Vercel will automatically build and deploy.
 
 ---
 
@@ -132,17 +153,17 @@ Open [http://localhost:3000](http://localhost:3000).
 
 | Object | Type | Purpose |
 |--------|------|---------|
-| `Users` | Table | Registered users |
-| `Categories` | Table | Self-referencing clothing categories |
-| `Inventory_Items` | Table | Core wardrobe items |
-| `Wear_Log` | Table | Per-item wear history |
-| `Outfits` | Table | Named outfit collections |
-| `Outfit_Items` | Table | M:N junction — outfits ↔ items |
-| `Transactions` | Table | Sales and borrows between users |
-| `trg_wear_count_increment` | Trigger | Auto-increments `wear_count` on Wear_Log insert |
-| `trg_update_item_status_on_sale` | Trigger | Marks item as Sold when transaction completes |
-| `sp_add_wear_entry` | Stored Procedure | Validates item then inserts wear log entry |
-| `v_cost_per_wear` | View | Calculates cost-per-wear per item |
+| Users | Table | Registered users |
+| Categories | Table | Self-referencing clothing categories |
+| Inventory_Items | Table | Core wardrobe items |
+| Wear_Log | Table | Per-item wear history |
+| Outfits | Table | Named outfit collections |
+| Outfit_Items | Table | M:N junction — outfits ↔ items |
+| Transactions | Table | Sales and borrows between users |
+| trg_wear_count_increment | Trigger | Auto-increments wear_count on Wear_Log insert |
+| trg_update_item_status_on_sale | Trigger | Marks item as Sold when transaction completes |
+| sp_add_wear_entry | Stored Procedure | Validates item then inserts wear log entry |
+| v_cost_per_wear | View | Calculates cost-per-wear per item |
 
 ---
 
@@ -152,20 +173,20 @@ Open [http://localhost:3000](http://localhost:3000).
 
 | Route | Description |
 |-------|-------------|
-| `/signin` | Sign in with email + password |
-| `/signup` | Create a new account |
+| /signin | Sign in with email + password |
+| /signup | Create a new account |
 
 ### Protected routes (login required)
 
 | Route | Description |
 |-------|-------------|
-| `/closet` | Pinterest-style wardrobe grid with filter bar |
-| `/closet/add` | Add a new clothing item |
-| `/closet/[itemId]` | Item detail — wear log, log wear, edit, delete |
-| `/outfits` | Gallery of saved outfit looks |
-| `/outfits/create` | Build a new outfit by selecting closet items |
-| `/analytics` | Cost-per-wear table and metrics |
-| `/transactions` | Transaction history |
+| /closet | Pinterest-style wardrobe grid with filter bar |
+| /closet/add | Add a new clothing item |
+| /closet/[itemId] | Item detail — wear log, log wear, edit, delete |
+| /outfits | Gallery of saved outfit looks |
+| /outfits/create | Build a new outfit by selecting closet items |
+| /analytics | Cost-per-wear table and metrics |
+| /transactions | Transaction history |
 
 ---
 
@@ -199,40 +220,27 @@ src/
 
 ---
 
-## Progress
-
-- [x] Phase 1 — Project Setup & Database
-- [x] Phase 2 — Authentication
-- [x] Phase 3 — Closet
-- [x] Phase 4 — Outfits
-- [x] Phase 5 — Analytics
-- [x] Phase 6 — Transactions
-- [x] Phase 7 — Polish & Seed Data
-
-
----
-
 ## DBMS Concepts Covered
 
 | Concept | Where |
 |---------|-------|
 | ER Model | 6 entities, all relationships |
 | Relational Model, PKs, FKs | Every table |
-| SQL DDL | `CREATE TABLE`, `TRIGGER`, `PROCEDURE`, `VIEW` |
-| SQL DML | `SELECT`, `INSERT`, `UPDATE`, `DELETE` in every action |
+| SQL DDL | CREATE TABLE, TRIGGER, PROCEDURE, VIEW |
+| SQL DML | SELECT, INSERT, UPDATE, DELETE in every action |
 | JOINs (INNER, LEFT) | Closet+Category, Outfit+Items, Transaction+Users |
-| Aggregate Functions | `COUNT`, `ROUND`, `NULLIF`, `COALESCE` |
-| Subqueries | "Items never worn" analytics query |
+| Aggregate Functions | COUNT, ROUND, NULLIF, COALESCE |
+| Subqueries | Items never worn analytics query |
 | GROUP BY | Analytics aggregations |
 | FULLTEXT Index | Item search by name/brand/description |
-| Views | `v_cost_per_wear` on analytics page |
-| Triggers | `trg_wear_count_increment`, `trg_update_item_status_on_sale` |
-| Stored Procedures | `sp_add_wear_entry` |
+| Views | v_cost_per_wear on analytics page |
+| Triggers | trg_wear_count_increment, trg_update_item_status_on_sale |
+| Stored Procedures | sp_add_wear_entry |
 | Normalization 1NF–3NF | Per-table in DB_SCHEMA.md |
 | Transactions (ACID) | Outfit creation, sale recording |
 | Indexes | FK columns, FULLTEXT, status, color |
-| Self-referencing FK | `Categories.parent_id` |
-| M:N Relationship | `Outfit_Items` junction table |
+| Self-referencing FK | Categories.parent_id |
+| M:N Relationship | Outfit_Items junction table |
 | ENUMs & CHECK Constraints | Multiple per table |
 
 ---

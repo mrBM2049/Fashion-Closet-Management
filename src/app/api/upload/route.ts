@@ -21,13 +21,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "File must be under 5 MB" }, { status: 400 });
 
   try {
+    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+      throw new Error("Missing BLOB_READ_WRITE_TOKEN. Please configure it in Vercel or .env.local");
+    }
+
     const blob = await put(file.name, file, {
       access: "public",
     });
 
     return NextResponse.json({ url: blob.url });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Upload error:", error);
-    return NextResponse.json({ error: "Failed to upload file" }, { status: 500 });
+    return NextResponse.json(
+      { error: error.message || "Failed to upload file" },
+      { status: 500 }
+    );
   }
 }

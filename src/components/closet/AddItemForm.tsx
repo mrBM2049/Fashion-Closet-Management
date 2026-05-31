@@ -47,7 +47,7 @@ export default function AddItemForm({ categories }: { categories: Category[] }) 
 
           {/* LEFT — image upload */}
           <div className="bg-foreground/4 flex flex-col items-center justify-center p-6 gap-3 min-h-[200px] md:min-h-[360px]">
-            <div className="w-full max-w-[180px] md:max-w-[200px]">
+            <div className="w-full max-w-[220px] md:max-w-[280px]">
               <ImageUploader onUpload={(url) => setImageUrl(url)} />
             </div>
             <p className="text-xs text-foreground/25 text-center">JPEG, PNG, WebP · max 5 MB</p>

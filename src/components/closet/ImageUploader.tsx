@@ -32,7 +32,7 @@ export default function ImageUploader({ currentUrl, onUpload }: { currentUrl?: s
         onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
         onDragLeave={() => setDragging(false)}
         onDrop={(e) => { e.preventDefault(); setDragging(false); handleFile(e.dataTransfer.files[0]); }}
-        className={`relative w-full aspect-square max-w-[200px] rounded-xl border-2 border-dashed overflow-hidden cursor-pointer transition-colors
+        className={`relative w-full aspect-square rounded-xl border-2 border-dashed overflow-hidden cursor-pointer transition-colors
           ${dragging ? "border-primary bg-primary/5" : "border-border hover:border-primary/50 hover:bg-muted/40"}
           ${uploading ? "pointer-events-none" : ""}`}>
         {preview ? (
